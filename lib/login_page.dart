@@ -39,14 +39,15 @@ class _LoginPageState extends State<LoginPage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // 🔹 Replace with your Canva logo
         Column(
           children: [
+            // 🔹 Adjust this SizedBox to move the logo lower
+            const SizedBox(height: 20), // Logo pushed lower
             Image.asset(
-              "assets/logo.png", // <-- put your logo here
+              "assets/logo.png", // Your Canva logo here
               height: 100,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 1), // Space between logo and title
             const Text(
               "Fix & Match",
               style: TextStyle(
@@ -56,7 +57,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12), // Space between title and subtitle
             const Text(
               "CTRL + CREW",
               style: TextStyle(
@@ -134,22 +135,23 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // 🔹 Replace with your Canva logo (smaller inside card)
+                // 🔹 Adjust this SizedBox to move the logo lower inside card
+                const SizedBox(height: 20), // Logo slightly lower in card
                 Image.asset(
-                  "assets/logo.png", // <-- put your logo here
+                  "assets/logo.png", // Your Canva logo here
                   height: 80,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 1), // Space between logo and title
                 const Text(
                   "Fix & Match",
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 8), // Space between title and subtitle
                 const Text(
                   "CTRL + CREW",
                   style: TextStyle(fontSize: 14, color: Colors.black54),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24), // Space before input fields
 
                 // Username Field
                 TextField(
@@ -170,7 +172,7 @@ class _LoginPageState extends State<LoginPage> {
                     border: OutlineInputBorder(),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24), // Space before login/register button
 
                 // Login/Register Button
                 SizedBox(
