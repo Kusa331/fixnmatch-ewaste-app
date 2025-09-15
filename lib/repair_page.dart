@@ -39,7 +39,7 @@ class _RepairPageState extends State<RepairPage> {
           children: [
             // 🔹 Request Type Toggle
             buildCard(
-              title: "Request Type",
+              title: "Request Type", // ✅ Changed color in buildCard
               child: Wrap(
                 spacing: 8,
                 children: ['Repair', 'Dispose'].map((type) {
@@ -67,16 +67,16 @@ class _RepairPageState extends State<RepairPage> {
 
             // 🔹 Phone Details + Issue Card
             buildCard(
-              title: "Phone Details",
+              title: "Phone Details", // ✅ Changed color in buildCard
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Phone Brand Section
                   Text(
                     "What’s the brand of your phone?",
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontWeight: FontWeight.w600,
-                      color: darkGreen,
+                      color: Colors.black, // ✅ black text
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -123,9 +123,9 @@ class _RepairPageState extends State<RepairPage> {
                   // Repair Issue Section
                   Text(
                     "What type of issue are you facing?",
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontWeight: FontWeight.w600,
-                      color: darkGreen,
+                      color: Colors.black, // ✅ black text
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -170,7 +170,7 @@ class _RepairPageState extends State<RepairPage> {
 
             // 🔹 Location Card
             buildCard(
-              title: "Where are you located?",
+              title: "Where are you located?", // ✅ Changed color in buildCard
               child: TextField(
                 controller: locationController,
                 decoration: InputDecoration(
@@ -218,10 +218,10 @@ class _RepairPageState extends State<RepairPage> {
           children: [
             Text(
               title,
-              style: TextStyle(
+              style: const TextStyle(
                 fontWeight: FontWeight.w700,
                 fontSize: 18,
-                color: darkGreen,
+                color: Colors.black, // ✅ black text
               ),
             ),
             const SizedBox(height: 12),
@@ -257,9 +257,9 @@ class _RepairPageState extends State<RepairPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                summaryRow("Request Type", requestType),
+                summaryRow("RequestType ", requestType),
                 const Divider(),
-                summaryRow("Phone Brand", brand),
+                summaryRow("PhoneBrand ", brand),
                 const Divider(),
                 summaryRow("Issue", issue),
                 const Divider(),

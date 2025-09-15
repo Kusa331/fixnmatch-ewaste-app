@@ -32,27 +32,19 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  /// =====================
+  /// GET STARTED SCREEN
+  /// =====================
   Widget _buildGetStarted() {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // Logo
+        // 🔹 Replace with your Canva logo
         Column(
           children: [
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                CircleAvatar(
-                  radius: 50,
-                  backgroundColor: lightGreen.withOpacity(0.3),
-                ),
-                Icon(Icons.eco, size: 60, color: darkGreen),
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: Icon(Icons.build, size: 28, color: darkGreen),
-                ),
-              ],
+            Image.asset(
+              "assets/logo.png", // <-- put your logo here
+              height: 100,
             ),
             const SizedBox(height: 16),
             const Text(
@@ -76,6 +68,8 @@ class _LoginPageState extends State<LoginPage> {
           ],
         ),
         const SizedBox(height: 60),
+
+        // Get Started Button
         SizedBox(
           width: double.infinity,
           child: ElevatedButton.icon(
@@ -101,6 +95,8 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ),
         const SizedBox(height: 20),
+
+        // Tagline
         Text(
           "Manage your e-waste efficiently and responsibly",
           textAlign: TextAlign.center,
@@ -113,6 +109,9 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  /// =====================
+  /// LOGIN / REGISTER CARD
+  /// =====================
   Widget _buildCrudCard() {
     return Container(
       decoration: BoxDecoration(
@@ -131,101 +130,93 @@ class _LoginPageState extends State<LoginPage> {
         borderRadius: BorderRadius.circular(20),
         child: Padding(
           padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Logo
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  CircleAvatar(
-                    radius: 40,
-                    backgroundColor: lightGreen.withOpacity(0.3),
-                  ),
-                  Icon(Icons.eco, size: 50, color: darkGreen),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Icon(Icons.build, size: 20, color: darkGreen),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                "Fix & Match",
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                "CTRL + CREW",
-                style: TextStyle(fontSize: 14, color: Colors.black54),
-              ),
-              const SizedBox(height: 20),
-
-              TextField(
-                controller: usernameController,
-                decoration: const InputDecoration(
-                  labelText: "Username",
-                  border: OutlineInputBorder(),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // 🔹 Replace with your Canva logo (smaller inside card)
+                Image.asset(
+                  "assets/logo.png", // <-- put your logo here
+                  height: 80,
                 ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: "Password",
-                  border: OutlineInputBorder(),
+                const SizedBox(height: 16),
+                const Text(
+                  "Fix & Match",
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
-              ),
+                const SizedBox(height: 4),
+                const Text(
+                  "CTRL + CREW",
+                  style: TextStyle(fontSize: 14, color: Colors.black54),
+                ),
+                const SizedBox(height: 20),
 
-              const SizedBox(height: 20),
+                // Username Field
+                TextField(
+                  controller: usernameController,
+                  decoration: const InputDecoration(
+                    labelText: "Username",
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 16),
 
-              // ✅ Simplified logic
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
+                // Password Field
+                TextField(
+                  controller: passwordController,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: "Password",
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Login/Register Button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (isLoginMode) {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const DashboardPage(),
+                          ),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text("Registration Successful!")),
+                        );
+                        setState(() {
+                          isLoginMode = true;
+                        });
+                      }
+
+                      usernameController.clear();
+                      passwordController.clear();
+                    },
+                    child: Text(isLoginMode ? "Login" : "Register"),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Toggle Button
+                TextButton(
                   onPressed: () {
-                    if (isLoginMode) {
-                      // Always go to Dashboard
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const DashboardPage(),
-                        ),
-                      );
-                    } else {
-                      // Just show success message
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Registration Successful!")),
-                      );
-                      setState(() {
-                        isLoginMode = true;
-                      });
-                    }
-
-                    usernameController.clear();
-                    passwordController.clear();
+                    setState(() {
+                      isLoginMode = !isLoginMode;
+                    });
                   },
-                  child: Text(isLoginMode ? "Login" : "Register"),
+                  child: Text(
+                    isLoginMode
+                        ? "Don't have an account? Register"
+                        : "Already have an account? Login",
+                  ),
                 ),
-              ),
-
-              const SizedBox(height: 12),
-
-              TextButton(
-                onPressed: () {
-                  setState(() {
-                    isLoginMode = !isLoginMode;
-                  });
-                },
-                child: Text(
-                  isLoginMode
-                      ? "Don't have an account? Register"
-                      : "Already have an account? Login",
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

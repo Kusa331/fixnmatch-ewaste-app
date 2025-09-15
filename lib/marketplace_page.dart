@@ -19,7 +19,7 @@ class _MarketplacePageState extends State<MarketplacePage> {
   @override
   Widget build(BuildContext context) {
     return MainScaffold(
-      currentIndex: 2, // Highlights Marketplace
+      currentIndex: 2,
       title: "Marketplace",
       body: SafeArea(
         child: ListView(
@@ -114,32 +114,46 @@ class _MarketplacePageState extends State<MarketplacePage> {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               children: List.generate(6, (index) {
-                return sectionCard(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          color: darkGreen,
-                          shape: BoxShape.circle,
-                        ),
-                        padding: const EdgeInsets.all(16),
-                        child: const Icon(
-                          Icons.shopping_bag,
-                          size: 32,
-                          color: Colors.white,
+                return InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ItemDetailPage(
+                          itemName: "Item ${index + 1}",
+                          itemDescription: "This is a detailed description of Item ${index + 1}.",
+                          itemImage: Icons.shopping_bag,
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Item ${index + 1}',
-                        style: TextStyle(
-                          color: darkGreen,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                    );
+                  },
+                  child: sectionCard(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            color: darkGreen,
+                            shape: BoxShape.circle,
+                          ),
+                          padding: const EdgeInsets.all(16),
+                          child: const Icon(
+                            Icons.shopping_bag,
+                            size: 32,
+                            color: Colors.white,
+                          ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 12),
+                        Text(
+                          'Item ${index + 1}',
+                          style: TextStyle(
+                            color: darkGreen,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 );
               }),
@@ -152,7 +166,7 @@ class _MarketplacePageState extends State<MarketplacePage> {
     );
   }
 
-  // 🔹 Card Layout for consistent style
+  // 🔹 Card Layout
   Widget sectionCard({required Widget child, double? height}) {
     return Card(
       elevation: 6,
@@ -162,6 +176,135 @@ class _MarketplacePageState extends State<MarketplacePage> {
         height: height,
         padding: const EdgeInsets.all(16),
         child: child,
+      ),
+    );
+  }
+}
+
+// 🔹 Item Detail Page with chat
+class ItemDetailPage extends StatefulWidget {
+  final String itemName;
+  final String itemDescription;
+  final IconData itemImage;
+
+  const ItemDetailPage({
+    super.key,
+    required this.itemName,
+    required this.itemDescription,
+    required this.itemImage,
+  });
+
+  @override
+  State<ItemDetailPage> createState() => _ItemDetailPageState();
+}
+
+class _ItemDetailPageState extends State<ItemDetailPage> {
+  final List<String> messages = [
+    "Hello, is this still available?",
+    "Yes, it's available!",
+  ];
+  final TextEditingController messageController = TextEditingController();
+
+  final Color darkGreen = const Color(0xFF0F6B32);
+
+  void sendMessage() {
+    if (messageController.text.trim().isNotEmpty) {
+      setState(() {
+        messages.add(messageController.text.trim());
+      });
+      messageController.clear();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: darkGreen,
+        iconTheme: const IconThemeData(color: Colors.white), // back button white
+        title: Text(
+          widget.itemName,
+          style: const TextStyle(color: Colors.white), // ✅ Title white
+        ),
+      ),
+      body: Column(
+        children: [
+          // 🔹 Item Image
+          Container(
+            color: Colors.grey[200],
+            height: 200,
+            child: Center(
+              child: Icon(widget.itemImage, size: 100, color: darkGreen),
+            ),
+          ),
+
+          // 🔹 Description
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text(
+              widget.itemDescription,
+              style: const TextStyle(fontSize: 16),
+            ),
+          ),
+
+          const Divider(),
+
+          // 🔹 Chat Section
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: messages.length,
+              itemBuilder: (context, index) {
+                final isMe = index % 2 == 0; // alternate sender
+                return Align(
+                  alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(vertical: 4),
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: isMe ? darkGreen : Colors.grey[300],
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      messages[index],
+                      style: TextStyle(
+                        color: isMe ? Colors.white : Colors.black,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          // 🔹 Message Box
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: messageController,
+                    decoration: InputDecoration(
+                      hintText: "Send a message to seller...",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.send, color: Color(0xFF0F6B32)),
+                  onPressed: sendMessage,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

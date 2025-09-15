@@ -9,8 +9,14 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
+  // Example sales data (replace with real data later)
+  final int totalItems = 50;
+  final int soldItems = 34;
+  final double profit = 12400.75;
+
   // Task-style card for dashboard items
-  Widget taskCard(String title, IconData icon, Color iconColor, {String? value, VoidCallback? onTap}) {
+  Widget taskCard(String title, IconData icon, Color iconColor,
+      {String? value, VoidCallback? onTap}) {
     return InkWell(
       borderRadius: BorderRadius.circular(20),
       onTap: onTap,
@@ -44,7 +50,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
               ),
             ),
-            if (value != null)
+            if (value != null) // only show if provided
               Text(
                 value,
                 style: TextStyle(
@@ -62,8 +68,15 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  // Progress card
-  Widget progressCard() {
+  // Sales & Profit Statistics card
+  Widget salesStatsCard({
+    required int totalItems,
+    required int soldItems,
+    required double profit,
+  }) {
+    double progress = totalItems > 0 ? soldItems / totalItems : 0;
+    double percentage = progress * 100;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -78,40 +91,68 @@ class _DashboardPageState extends State<DashboardPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Title
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: const [
               Text(
-                "Progress Task Progress",
+                "Sales Statistics",
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              Icon(Icons.close, color: Colors.white),
+              Icon(Icons.insights, color: Colors.white),
             ],
           ),
           const SizedBox(height: 10),
-          const Text(
-            "3/5 is completed",
-            style: TextStyle(color: Colors.white70, fontSize: 12),
+
+          // Sold / Total
+          Text(
+            "$soldItems of $totalItems items sold",
+            style: const TextStyle(color: Colors.white70, fontSize: 12),
           ),
           const SizedBox(height: 10),
+
+          // Progress bar
           LinearProgressIndicator(
-            value: 0.6899,
+            value: progress,
             backgroundColor: Colors.white24,
-            color: Colors.green, // green for e-waste theme
+            color: Colors.greenAccent,
             minHeight: 8,
             borderRadius: BorderRadius.circular(10),
           ),
           const SizedBox(height: 6),
-          const Align(
+
+          // Percentage
+          Align(
             alignment: Alignment.centerRight,
             child: Text(
-              "68.99%",
-              style: TextStyle(color: Colors.white, fontSize: 12),
+              "${percentage.toStringAsFixed(1)}%",
+              style: const TextStyle(color: Colors.white, fontSize: 12),
             ),
+          ),
+
+          const SizedBox(height: 14),
+
+          // Profit
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "Total Profit",
+                style: TextStyle(color: Colors.white70, fontSize: 12),
+              ),
+              Text(
+                "₱${profit.toStringAsFixed(2)}",
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -147,16 +188,19 @@ class _DashboardPageState extends State<DashboardPage> {
                   ),
                   const SizedBox(height: 20),
 
-                  // Progress card
-                  progressCard(),
+                  // Sales & Profit card
+                  salesStatsCard(
+                    totalItems: totalItems,
+                    soldItems: soldItems,
+                    profit: profit,
+                  ),
                   const SizedBox(height: 20),
 
-                  // Task cards
-                  taskCard("Total Tasks", Icons.bar_chart, Colors.orange, value: "16"),
+                  // ✅ Removed values from Feedback & Address Location
+                  taskCard("Feedback", Icons.feedback, Colors.orange),
                   const SizedBox(height: 12),
-                  taskCard("Completed", Icons.check_circle, Colors.green, value: "32"),
+                  taskCard("Address Location", Icons.location_on, Colors.green),
                   const SizedBox(height: 12),
-                  // New History and Help cards
                   taskCard("History", Icons.history, Colors.blue, onTap: () {
                     // TODO: Navigate to History page
                   }),
