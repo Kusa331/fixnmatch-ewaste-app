@@ -21,8 +21,23 @@ class _RepairPageState extends State<RepairPage> {
     'Other Concern',
   ];
 
+  // Added device categories for filtering
+  final List<String> deviceCategories = [
+    'All Devices',
+    'Mobile Phones',
+    'Laptops',
+    'Tablets',
+    'Chargers',
+    'Keyboards',
+    'Headphones',
+    'Monitors',
+    'Printers',
+    'Other',
+  ];
+
   String? selectedPhoneBrand;
   String? selectedRepairType;
+  String? selectedDeviceCategory = 'All Devices';
   String requestType = 'Repair'; // default
 
   final Color darkGreen = const Color(0xFF0F6B32);
@@ -65,15 +80,62 @@ class _RepairPageState extends State<RepairPage> {
             ),
             const SizedBox(height: 20),
 
-            // 🔹 Phone Details + Issue Card
+            // 🔹 Device Category Filter
             buildCard(
-              title: "Phone Details", // ✅ Changed color in buildCard
+              title: "Device Category",
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Phone Brand Section
                   Text(
-                    "What’s the brand of your phone?",
+                    "Select device category:",
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    children: deviceCategories.map((category) {
+                      return ChoiceChip(
+                        label: Text(category),
+                        selected: selectedDeviceCategory == category,
+                        selectedColor: lightGreen.withOpacity(0.5),
+                        onSelected: (selected) {
+                          if (selected) {
+                            setState(() {
+                              selectedDeviceCategory = category;
+                            });
+                          }
+                        },
+                        backgroundColor: Colors.grey[200],
+                        labelStyle: TextStyle(
+                          color: selectedDeviceCategory == category
+                              ? darkGreen
+                              : Colors.black87,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // 🔹 Device Details + Issue Card
+            buildCard(
+              title:
+                  "Device Details", // Changed from Phone Details to Device Details
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Device Brand Section
+                  Text(
+                    selectedDeviceCategory == 'All Devices' ||
+                            selectedDeviceCategory == 'Mobile Phones'
+                        ? "What's the brand of your phone?"
+                        : "What's the brand of your ${selectedDeviceCategory?.toLowerCase().substring(0, selectedDeviceCategory!.length - 1) ?? 'device'}?",
                     style: const TextStyle(
                       fontWeight: FontWeight.w600,
                       color: Colors.black, // ✅ black text
@@ -95,7 +157,9 @@ class _RepairPageState extends State<RepairPage> {
                         },
                         backgroundColor: Colors.grey[200],
                         labelStyle: TextStyle(
-                          color: selectedPhoneBrand == brand ? darkGreen : Colors.black87,
+                          color: selectedPhoneBrand == brand
+                              ? darkGreen
+                              : Colors.black87,
                         ),
                       );
                     }).toList(),
@@ -146,7 +210,9 @@ class _RepairPageState extends State<RepairPage> {
                         },
                         backgroundColor: Colors.grey[200],
                         labelStyle: TextStyle(
-                          color: selectedRepairType == type ? darkGreen : Colors.black87,
+                          color: selectedRepairType == type
+                              ? darkGreen
+                              : Colors.black87,
                         ),
                       );
                     }).toList(),
@@ -160,7 +226,10 @@ class _RepairPageState extends State<RepairPage> {
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        prefixIcon: Icon(Icons.report_problem, color: darkGreen),
+                        prefixIcon: Icon(
+                          Icons.report_problem,
+                          color: darkGreen,
+                        ),
                       ),
                     ),
                 ],
@@ -239,18 +308,21 @@ class _RepairPageState extends State<RepairPage> {
         : selectedPhoneBrand ?? 'Not specified';
     final issue = selectedRepairType == 'Other Concern'
         ? (otherIssueController.text.isNotEmpty
-            ? otherIssueController.text
-            : 'Other (unspecified)')
+              ? otherIssueController.text
+              : 'Other (unspecified)')
         : selectedRepairType ?? 'Not specified';
-    final location =
-        locationController.text.isEmpty ? 'Not provided' : locationController.text;
+    final location = locationController.text.isEmpty
+        ? 'Not provided'
+        : locationController.text;
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text("Your Repair Request"),
         content: Card(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           elevation: 3,
           child: Padding(
             padding: const EdgeInsets.all(12),
@@ -277,7 +349,9 @@ class _RepairPageState extends State<RepairPage> {
             onPressed: () {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Finding eco-friendly repair shops...")),
+                const SnackBar(
+                  content: Text("Finding eco-friendly repair shops..."),
+                ),
               );
             },
             style: ElevatedButton.styleFrom(

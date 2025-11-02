@@ -1,5 +1,5 @@
 name: fixnmatch
-description: "A new Flutter project."
+description: "E-Waste Management App with repair guides, marketplace, and recycling tools."
 # Prevents accidental publishing to pub.dev
 publish_to: 'none'
 
@@ -18,6 +18,35 @@ dependencies:
   
   # For picking images from gallery or camera
   image_picker: ^1.1.2
+  
+  # For maps and location services
+  flutter_map: ^6.0.1
+  latlong2: ^0.9.0
+  geolocator: ^10.1.0
+  
+  # For backend integration
+  http: ^1.1.0
+  dio: ^5.3.3
+  
+  # For local storage and caching
+  shared_preferences: ^2.2.2
+  sqflite: ^2.3.0
+  path_provider: ^2.1.1
+  
+  # For state management
+  provider: ^6.1.1
+  
+  # For URL handling
+  url_launcher: ^6.2.1
+  
+  # For Firebase integration
+  firebase_core: ^2.32.0
+  firebase_auth: ^4.20.0
+  cloud_firestore: ^4.17.5
+  firebase_storage: ^11.7.5
+  google_sign_in: ^6.2.1
+
+
 
 dev_dependencies:
   flutter_test:
@@ -27,11 +56,9 @@ dev_dependencies:
   flutter_lints: ^5.0.0
 
 flutter:
-  # Includes the Material Icons font
   uses-material-design: true
-
-  # Image assets (make sure the "assets" folder is in project root)
   assets:
+    - assets/signin-assets/signin-assets/Web (mobile + desktop)/png@1x/light/web_light_sq_SI@1x.png
     - assets/logo.png
 
   # Example if you add more images later:

@@ -1,5 +1,9 @@
+import 'package:fixnmatch/services/firebase_service.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'dashboard_page.dart'; // Import your dashboard page
+import 'providers/app_provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -14,6 +18,7 @@ class _LoginPageState extends State<LoginPage> {
 
   bool showCrud = false; // controls whether to show login/register
   final TextEditingController usernameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   bool isLoginMode = true; // toggle between login and register
 
@@ -101,10 +106,7 @@ class _LoginPageState extends State<LoginPage> {
         Text(
           "Manage your e-waste efficiently and responsibly",
           textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.grey[700],
-          ),
+          style: TextStyle(fontSize: 14, color: Colors.grey[700]),
         ),
       ],
     );
@@ -152,16 +154,28 @@ class _LoginPageState extends State<LoginPage> {
                   style: TextStyle(fontSize: 14, color: Colors.black54),
                 ),
                 const SizedBox(height: 24), // Space before input fields
-
                 // Username Field
                 TextField(
                   controller: usernameController,
-                  decoration: const InputDecoration(
-                    labelText: "Username",
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: isLoginMode ? "Email" : "Name",
+                    border: const OutlineInputBorder(),
                   ),
                 ),
                 const SizedBox(height: 16),
+
+                // Email Field (shown only in Register mode)
+                if (!isLoginMode) ...[
+                  TextField(
+                    controller: emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: const InputDecoration(
+                      labelText: "Email",
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
 
                 // Password Field
                 TextField(
@@ -172,35 +186,118 @@ class _LoginPageState extends State<LoginPage> {
                     border: OutlineInputBorder(),
                   ),
                 ),
-                const SizedBox(height: 24), // Space before login/register button
-
+                const SizedBox(
+                  height: 24,
+                ), // Space before login/register button
                 // Login/Register Button
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if (isLoginMode) {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const DashboardPage(),
-                          ),
-                        );
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text("Registration Successful!")),
-                        );
-                        setState(() {
-                          isLoginMode = true;
-                        });
-                      }
+                Consumer<AppProvider>(
+                  builder: (context, appProvider, child) {
+                    return SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: appProvider.isLoading
+                            ? null
+                            : () async {
+                                // Validate inputs
+                                if (isLoginMode) {
+                                  if (usernameController.text.isEmpty ||
+                                      passwordController.text.isEmpty) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Please enter your email and password',
+                                        ),
+                                      ),
+                                    );
+                                    return;
+                                  }
+                                } else {
+                                  if (usernameController.text.isEmpty ||
+                                      emailController.text.isEmpty ||
+                                      passwordController.text.isEmpty) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Please fill name, email, and password',
+                                        ),
+                                      ),
+                                    );
+                                    return;
+                                  }
+                                  // Basic email format check
+                                  final email = emailController.text.trim();
+                                  final emailValid = RegExp(
+                                    r'^[^@]+@[^@]+\.[^@]+',
+                                  ).hasMatch(email);
+                                  if (!emailValid) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Please enter a valid email address',
+                                        ),
+                                      ),
+                                    );
+                                    return;
+                                  }
+                                }
 
-                      usernameController.clear();
-                      passwordController.clear();
-                    },
-                    child: Text(isLoginMode ? "Login" : "Register"),
-                  ),
+                                bool success;
+                                if (isLoginMode) {
+                                  success = await appProvider.signIn(
+                                    usernameController.text,
+                                    passwordController.text,
+                                  );
+                                } else {
+                                  success = await appProvider.signUp(
+                                    usernameController.text,
+                                    emailController.text,
+                                    passwordController.text,
+                                  );
+                                }
+
+                                if (success && mounted) {
+                                  // Navigate to dashboard on successful login
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const DashboardPage(),
+                                    ),
+                                  );
+                                } else if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        isLoginMode
+                                            ? 'Login failed. Please check your credentials.'
+                                            : 'Registration failed. Please try again.',
+                                      ),
+                                    ),
+                                  );
+                                }
+                              },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: darkGreen,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: appProvider.isLoading
+                            ? const CircularProgressIndicator(
+                                color: Colors.white,
+                              )
+                            : Text(
+                                isLoginMode ? 'Login' : 'Register',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                      ),
+                    );
+                  },
                 ),
                 const SizedBox(height: 12),
 
@@ -215,6 +312,75 @@ class _LoginPageState extends State<LoginPage> {
                     isLoginMode
                         ? "Don't have an account? Register"
                         : "Already have an account? Login",
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Google Sign-In Button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    icon: Image.asset(
+                      "assets/signin-assets/signin-assets/Web (mobile + desktop)/png@1x/light/web_light_sq_SI@1x.png",
+                      height: 24,
+                      width: 24,
+                      errorBuilder: (context, error, stackTrace) => const Icon(
+                        Icons.account_circle,
+                        size: 24,
+                        color: Colors.black54,
+                      ),
+                    ),
+                    label: const Text(
+                      "Sign in with Google",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      elevation: 6,
+                    ),
+                    onPressed: () async {
+                      try {
+                        final userCredential = await FirebaseService.signInWithGoogle();
+                        if (userCredential != null && mounted) {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const DashboardPage(),
+                            ),
+                          );
+                        }
+                      } on FirebaseAuthException catch (e) {
+                        if (!mounted) return;
+                        // Show more specific error messages to aid debugging
+                        final code = e.code;
+                        String message = e.message ?? 'Google Sign-In failed.';
+                        if (code == 'operation-not-allowed') {
+                          message = 'Enable Google provider in Firebase Authentication.';
+                        } else if (code == 'unauthorized-domain') {
+                          message = 'Add your domain to Firebase authorized domains (e.g., localhost).';
+                        } else if (code == 'popup-blocked') {
+                          message = 'Popup blocked by browser; attempted redirect fallback.';
+                        } else if (code == 'popup-closed-by-user') {
+                          message = 'Popup was closed before completing sign-in.';
+                        }
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(message)),
+                        );
+                      } catch (e) {
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Google Sign-In failed.')),
+                        );
+                      }
+                    },
                   ),
                 ),
               ],

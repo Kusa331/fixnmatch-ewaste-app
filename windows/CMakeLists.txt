@@ -32,6 +32,12 @@ set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_RELEASE}")
 # Use Unicode for all projects.
 add_definitions(-DUNICODE -D_UNICODE)
 
+# Enable Developer Mode on Windows to support symlinks
+set(CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION 10.0.19041.0)
+set(CMAKE_VS_WINDOWS_TARGET_PLATFORM_MINVERSION 10.0.17763.0)
+add_definitions(-D_WIN32_WINNT=0x0A00 -DWINVER=0x0A00)
+add_definitions(-DWIN32_LEAN_AND_MEAN)
+
 # Compilation settings that should be applied to most targets.
 #
 # Be cautious about adding new options here, as plugins use this function by
