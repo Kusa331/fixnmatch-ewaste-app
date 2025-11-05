@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'login_page.dart';
 import 'dashboard_page.dart';
@@ -9,23 +8,13 @@ import 'value_page.dart';
 import 'profile_page.dart'; // ✅ Import the profile page
 import 'smart_finder_page.dart'; // ✅ Import the smart finder page
 import 'phone_suggestions_page.dart'; // ✅ Import the phone suggestions page
-import 'phone_suggestions_page.dart'; // ✅ Import the phone suggestions page
-import 'firebase_options.dart';
 import 'providers/app_provider.dart';
-import 'services/firebase_service.dart';
+import 'services/supabase_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Debug: print Firebase web options being used
-  try {
-    final opts = DefaultFirebaseOptions.currentPlatform;
-    debugPrint(
-      'Firebase init options: apiKey=${opts.apiKey}, authDomain=${opts.authDomain}, projectId=${opts.projectId}, appId=${opts.appId}',
-    );
-  } catch (_) {}
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  // Log diagnostics for Firebase configuration after initialization
-  FirebaseService.logConfigDiagnostics();
+  // Initialize Supabase
+  await SupabaseService.initializeSupabase();
   runApp(const FixMatchApp());
 }
 

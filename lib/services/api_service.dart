@@ -1,25 +1,21 @@
 // api_service.dart
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/user_model.dart';
 import '../models/marketplace_item_model.dart';
 
 class ApiService {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  
+  final SupabaseClient _supabase = Supabase.instance.client;
+
   // Authentication methods
   Future<UserModel?> signIn(String email, String password) async {
     try {
-      final userCredential = await _auth.signInWithEmailAndPassword(
+      final response = await _supabase.auth.signInWithPassword(
         email: email,
         password: password,
       );
-      
-      if (userCredential.user != null) {
-        return getUserProfile(userCredential.user!.uid);
+
+      if (response.user != null) {
+        return getUserProfile(response.user!.id);
       }
       return null;
     } catch (e) {
@@ -27,27 +23,25 @@ class ApiService {
       return null;
     }
   }
-  
+
   Future<UserModel?> signUp(String name, String email, String password) async {
     try {
-      final userCredential = await _auth.createUserWithEmailAndPassword(
+      final response = await _supabase.auth.signUp(
         email: email,
         password: password,
+        data: {'name': name},
       );
-      
-      if (userCredential.user != null) {
-        // Create user profile in Firestore
+
+      if (response.user != null) {
+        // Create user profile in Supabase
         final newUser = UserModel(
-          id: userCredential.user!.uid,
+          id: response.user!.id,
           name: name,
           email: email,
         );
-        
-        await _firestore
-            .collection('users')
-            .doc(userCredential.user!.uid)
-            .set(newUser.toJson());
-            
+
+        await _supabase.from('users').insert(newUser.toJson());
+
         return newUser;
       }
       return null;
@@ -56,17 +50,22 @@ class ApiService {
       return null;
     }
   }
-  
+
   Future<void> signOut() async {
-    await _auth.signOut();
+    await _supabase.auth.signOut();
   }
-  
+
   // User profile methods
   Future<UserModel?> getUserProfile(String userId) async {
     try {
-      final doc = await _firestore.collection('users').doc(userId).get();
-      if (doc.exists) {
-        return UserModel.fromJson(doc.data() as Map<String, dynamic>);
+      final response = await _supabase
+          .from('users')
+          .select()
+          .eq('id', userId)
+          .maybeSingle();
+
+      if (response != null) {
+        return UserModel.fromJson(Map<String, dynamic>.from(response));
       }
       return null;
     } catch (e) {
@@ -74,40 +73,46 @@ class ApiService {
       return null;
     }
   }
-  
+
   Future<bool> updateUserProfile(UserModel user) async {
     try {
-      await _firestore
-          .collection('users')
-          .doc(user.id)
-          .update(user.toJson());
+      await _supabase.from('users').update(user.toJson()).eq('id', user.id);
       return true;
     } catch (e) {
       print('Update user profile error: $e');
       return false;
     }
   }
-  
+
   // Marketplace methods
   Future<List<MarketplaceItemModel>> getMarketplaceItems() async {
     try {
-      final snapshot = await _firestore.collection('marketplace_items').get();
-      return snapshot.docs
-          .map((doc) => MarketplaceItemModel.fromJson(
-                {...doc.data(), 'id': doc.id}
-              ))
+      final response = await _supabase.from('marketplace_items').select();
+
+      return (response as List)
+          .map(
+            (item) =>
+                MarketplaceItemModel.fromJson(Map<String, dynamic>.from(item)),
+          )
           .toList();
     } catch (e) {
       print('Get marketplace items error: $e');
       return [];
     }
   }
-  
+
   Future<MarketplaceItemModel?> getMarketplaceItem(String itemId) async {
     try {
-      final doc = await _firestore.collection('marketplace_items').doc(itemId).get();
-      if (doc.exists) {
-        return MarketplaceItemModel.fromJson({...doc.data()!, 'id': doc.id});
+      final response = await _supabase
+          .from('marketplace_items')
+          .select()
+          .eq('id', itemId)
+          .maybeSingle();
+
+      if (response != null) {
+        return MarketplaceItemModel.fromJson(
+          Map<String, dynamic>.from(response),
+        );
       }
       return null;
     } catch (e) {
@@ -115,71 +120,74 @@ class ApiService {
       return null;
     }
   }
-  
+
   Future<String?> addMarketplaceItem(MarketplaceItemModel item) async {
     try {
-      final docRef = await _firestore
-          .collection('marketplace_items')
-          .add(item.toJson());
-      return docRef.id;
+      final response = await _supabase
+          .from('marketplace_items')
+          .insert(item.toJson())
+          .select()
+          .maybeSingle();
+
+      if (response != null) {
+        final data = Map<String, dynamic>.from(response);
+        return data['id'] as String?;
+      }
+      return null;
     } catch (e) {
       print('Add marketplace item error: $e');
       return null;
     }
   }
-  
+
   Future<bool> updateMarketplaceItem(MarketplaceItemModel item) async {
     try {
-      await _firestore
-          .collection('marketplace_items')
-          .doc(item.id)
-          .update(item.toJson());
+      await _supabase
+          .from('marketplace_items')
+          .update(item.toJson())
+          .eq('id', item.id);
       return true;
     } catch (e) {
       print('Update marketplace item error: $e');
       return false;
     }
   }
-  
+
   Future<bool> deleteMarketplaceItem(String itemId) async {
     try {
-      await _firestore
-          .collection('marketplace_items')
-          .doc(itemId)
-          .delete();
+      await _supabase.from('marketplace_items').delete().eq('id', itemId);
       return true;
     } catch (e) {
       print('Delete marketplace item error: $e');
       return false;
     }
   }
-  
+
   // Chat methods
   Future<List<Map<String, dynamic>>> getChatMessages(String chatId) async {
     try {
-      final snapshot = await _firestore
-          .collection('chats')
-          .doc(chatId)
-          .collection('messages')
-          .orderBy('timestamp')
-          .get();
-          
-      return snapshot.docs
-          .map((doc) => doc.data())
+      final response = await _supabase
+          .from('messages')
+          .select()
+          .eq('chat_id', chatId)
+          .order('timestamp');
+
+      return (response as List)
+          .map((item) => Map<String, dynamic>.from(item))
           .toList();
     } catch (e) {
       print('Get chat messages error: $e');
       return [];
     }
   }
-  
-  Future<bool> sendChatMessage(String chatId, Map<String, dynamic> message) async {
+
+  Future<bool> sendChatMessage(
+    String chatId,
+    Map<String, dynamic> message,
+  ) async {
     try {
-      await _firestore
-          .collection('chats')
-          .doc(chatId)
-          .collection('messages')
-          .add(message);
+      final messageWithChatId = {...message, 'chat_id': chatId};
+      await _supabase.from('messages').insert(messageWithChatId);
       return true;
     } catch (e) {
       print('Send chat message error: $e');

@@ -24,7 +24,7 @@ class AppProvider extends ChangeNotifier {
     setLoading(true);
     final user = await _apiService.signIn(email, password);
     setLoading(false);
-    
+
     if (user != null) {
       _currentUser = user;
       notifyListeners();
@@ -37,7 +37,7 @@ class AppProvider extends ChangeNotifier {
     setLoading(true);
     final user = await _apiService.signUp(name, email, password);
     setLoading(false);
-    
+
     if (user != null) {
       _currentUser = user;
       notifyListeners();
@@ -66,7 +66,7 @@ class AppProvider extends ChangeNotifier {
     setLoading(true);
     final itemId = await _apiService.addMarketplaceItem(item);
     setLoading(false);
-    
+
     if (itemId != null) {
       _marketplaceItems.add(item);
       notifyListeners();
@@ -80,12 +80,21 @@ class AppProvider extends ChangeNotifier {
     setLoading(true);
     final success = await _apiService.updateUserProfile(updatedUser);
     setLoading(false);
-    
+
     if (success) {
       _currentUser = updatedUser;
       notifyListeners();
       return true;
     }
     return false;
+  }
+
+  // Helper method to set user after Google sign-in
+  Future<void> setUserFromGoogleSignIn(String userId) async {
+    final user = await _apiService.getUserProfile(userId);
+    if (user != null) {
+      _currentUser = user;
+      notifyListeners();
+    }
   }
 }

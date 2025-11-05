@@ -1,9 +1,9 @@
-import 'package:fixnmatch/services/firebase_service.dart';
+import 'package:fixnmatch/services/supabase_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dashboard_page.dart'; // Import your dashboard page
 import 'providers/app_provider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -348,8 +348,19 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     onPressed: () async {
                       try {
-                        final userCredential = await FirebaseService.signInWithGoogle();
-                        if (userCredential != null && mounted) {
+                        final response =
+                            await SupabaseService.signInWithGoogle();
+                        if (response != null &&
+                            response.user != null &&
+                            mounted) {
+                          // Get user profile after Google sign-in
+                          final appProvider = Provider.of<AppProvider>(
+                            context,
+                            listen: false,
+                          );
+                          await appProvider.setUserFromGoogleSignIn(
+                            response.user!.id,
+                          );
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
@@ -357,27 +368,19 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           );
                         }
-                      } on FirebaseAuthException catch (e) {
+                      } on AuthException catch (e) {
                         if (!mounted) return;
-                        // Show more specific error messages to aid debugging
-                        final code = e.code;
-                        String message = e.message ?? 'Google Sign-In failed.';
-                        if (code == 'operation-not-allowed') {
-                          message = 'Enable Google provider in Firebase Authentication.';
-                        } else if (code == 'unauthorized-domain') {
-                          message = 'Add your domain to Firebase authorized domains (e.g., localhost).';
-                        } else if (code == 'popup-blocked') {
-                          message = 'Popup blocked by browser; attempted redirect fallback.';
-                        } else if (code == 'popup-closed-by-user') {
-                          message = 'Popup was closed before completing sign-in.';
-                        }
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(message)),
-                        );
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text(e.message)));
                       } catch (e) {
                         if (!mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Google Sign-In failed.')),
+                          SnackBar(
+                            content: Text(
+                              'Google Sign-In failed: ${e.toString()}',
+                            ),
+                          ),
                         );
                       }
                     },
